@@ -4,6 +4,7 @@ const router = express.Router();
 const trade = require('../models/trade');
 const stock = require('../models/stock');
 const portfolio = require('../models/portfolio');
+const axios = require('axios');
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
@@ -184,7 +185,28 @@ router.get("/holdings",
     });
 
 
+async function getYesterdayClosingPrice(stockName = 'MSFT') {
+    try {
+        const data = await axios.get(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${stockName}&apikey=N507XYI0Q129AFRF`)
 
+        /**
+         * get second attribute
+         */
+        const dateObj = new Date();
+        dateObj.setDate(dateObj.getDate() - 1);
+        const yesterDate = dateObj.toISOString().slice(0, 10).toString();
+
+        /**
+         * get yesterdays closing price of stock
+         */
+        const currentPrice = parseInt(data.data['Time Series (Daily)'][yesterDate]["4. close"]);
+        console.log(currentPrice);
+
+        return currentPrice;
+    } catch (error) {
+        throw error;
+    }
+}
 
 
 
