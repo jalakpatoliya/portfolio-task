@@ -28,6 +28,7 @@ app.use(express.static(__dirname + "/public"));
 const stock = require("./models/stock");
 const stockRoute = require('./routes/stockRoute');
 const tradeRoute = require('./routes/tradeRoute');
+const portfolioRoute = require('./routes/portfolioRoute');
 
 
 
@@ -36,6 +37,7 @@ const tradeRoute = require('./routes/tradeRoute');
  */
 app.use(stockRoute);
 app.use(tradeRoute);
+app.use(portfolioRoute);
 
 
 /**

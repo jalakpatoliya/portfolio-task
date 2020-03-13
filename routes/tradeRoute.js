@@ -90,7 +90,7 @@ router.post('/trade/update',
             const data = await trade.update({ _id: tradeId }, { date, type, price });
 
             res.status(200).json({ status: 'success', data })
-        } catch (error) {
+        } catch (e) {
             const errObj = {
                 message: e.message,
                 stack: e.stackTrace

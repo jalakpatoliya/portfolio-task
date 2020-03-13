@@ -1,18 +1,26 @@
 const bodyParser = require("body-parser");
 const express = require('express');
 const router = express.Router();
+const trade = require('../models/trade');
 const stock = require('../models/stock');
+const portfolio = require('../models/portfolio');
 
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(bodyParser.json());
 
 /**
- * Get all stock
+ * Get all portfolio
  */
-router.get("/stock",
+router.get("/portfolio",
     async function (req, res) {
         try {
-            let data = await stock.find().populate('trades');
+            let data = await portfolio.find().populate({
+                path: 'stocks',
+                populate: {
+                    path: 'trades',
+                    model: 'Trade'
+                }
+            });
 
             res.status(200).json({ status: 'success', data })
         } catch (e) {
@@ -25,16 +33,16 @@ router.get("/stock",
     });
 
 /**
- * Create a new stock
+ * Create a new portfolio
  */
-router.post('/stock',
+router.post('/portfolio',
     async (req, res) => {
         try {
             const { name } = req.body;
 
-            let stockData = new stock({ name });
+            let portfolioData = new portfolio({ name });
 
-            const data = await stockData.save();
+            const data = await portfolioData.save();
             console.log(data);
 
 
@@ -48,14 +56,38 @@ router.post('/stock',
         }
     })
 
+/**
+ * Add stock to portfolio
+ */
+router.post('/portfolio/addStock',
+    async (req, res) => {
+        try {
+            const { stockId, portfolioId } = req.body;
+
+            /**
+             * Push stock into portfolio
+             */
+            const stockData = await portfolio.findOneAndUpdate({ _id: portfolioId }, { $push: { stocks: stockId } });
+
+
+            res.status(200).json({ status: 'success', data: stockData })
+        } catch (e) {
+            const errObj = {
+                message: e.message,
+                stack: e.stackTrace
+            }
+            res.status(400).json({ status: 'fail', error: errObj })
+        }
+    })
+
 // /**
-// * Delete a stock
+// * Delete a portfolio
 // */
-router.post('/stock/delete',
+router.post('/portfolio/delete',
     async function (req, res) {
         try {
-            const { stockId } = req.body;
-            const data = await stock.findOneAndRemove({ _id: stockId });
+            const { portfolioId } = req.body;
+            const data = await portfolio.findOneAndRemove({ _id: portfolioId });
             res.status(200).json({ status: 'success', data })
         } catch (e) {
             const errObj = {
@@ -70,15 +102,14 @@ router.post('/stock/delete',
 );
 
 /**
- * Update a stock
+ * Update a portfolio
  */
-router.post('/stock/update',
+router.post('/portfolio/update',
     async function (req, res) {
-
         try {
 
-            const { stockId, name } = req.body;
-            const data = await stock.update({ _id: stockId }, { name });
+            const { portfolioId, name } = req.body;
+            const data = await portfolio.update({ _id: portfolioId, name });
 
             res.status(200).json({ status: 'success', data })
         } catch (e) {
