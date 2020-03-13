@@ -96,8 +96,6 @@ router.post('/portfolio/delete',
             }
             res.status(400).json({ status: 'fail', error: errObj })
         }
-
-
     }
 );
 
@@ -121,5 +119,74 @@ router.post('/portfolio/update',
         }
     }
 );
+
+/**
+ * get stocks with holdings
+ */
+router.get("/holdings",
+    async function (req, res) {
+        try {
+            let data = await portfolio.find().populate({
+                path: 'stocks',
+                populate: {
+                    path: 'trades',
+                    model: 'Trade'
+                }
+            });
+
+            /**
+             * Calculating holdings for all portfolios
+             */
+            let portfolios = [];
+
+            data.map(portfolio => {
+                // creating portfolio holding data for each portfolio
+                const portfolioData = {
+                    ownerName: portfolio.name,
+                    holdings: []
+                }
+
+                // calculating holdings based on each trade
+                portfolio.stocks.map((stock, i) => {
+                    const obj = {
+                        stockName: stock.name,
+                        quantity: 0,
+                        averageOfAllBuys: 0
+                    }
+
+                    let divisor = 0;
+
+                    stock.trades.map((trade, j) => {
+                        if (trade.type == 'sell') {
+                            obj.quantity -= trade.quantity;
+
+                        } else {
+                            obj.quantity += trade.quantity;
+                            obj.averageOfAllBuys += trade.price;
+                            divisor++;
+                        }
+                    })
+
+                    obj.averageOfAllBuys = obj.averageOfAllBuys / divisor;
+                    portfolioData.holdings.push(obj);
+                    portfolios.push(portfolioData);
+                })
+            })
+
+            res.status(200).json({ status: 'success', data: portfolios })
+        } catch (e) {
+            const errObj = {
+                message: e.message,
+                stack: e.stackTrace
+            }
+            res.status(400).json({ status: 'fail', error: errObj })
+        }
+    });
+
+
+
+
+
+
 
 module.exports = router;

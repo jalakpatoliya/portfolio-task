@@ -31,11 +31,11 @@ router.get("/trade",
 router.post('/trade',
     async (req, res) => {
         try {
-            const { date, type, price, stockId } = req.body;
+            const { date, type, price, quantity, stockId } = req.body;
 
             console.log(`${date},${type},${price},${stockId}`);
 
-            let tradeData = new trade({ date, type, price });
+            let tradeData = new trade({ date, type, price, quantity });
 
             console.log(`tradeData:${tradeData}`);
 

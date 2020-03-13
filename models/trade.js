@@ -5,13 +5,7 @@ var tradeSchema = new mongoose.Schema({
     date: Date,
     type: String,
     price: Number,
-    stock: {
-        id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Stock"
-        },
-        name: String
-    },
+    quantity: Number
 });
 
 var Trade = mongoose.model("Trade", tradeSchema);
